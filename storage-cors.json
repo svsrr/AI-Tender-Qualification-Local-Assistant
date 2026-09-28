@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "https://tender-scrutiny-assistant.web.app",
+      "https://tender-scrutiny-assistant.firebaseapp.com",
+      "http://localhost:3000"
+    ],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type", "Authorization"],
+    "maxAgeSeconds": 3600
+  }
+]

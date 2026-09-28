@@ -1,0 +1,34 @@
+rules_version = '2';
+
+// Original bid PDFs, kept so the evidence viewer shows the real document. Files are
+// content-addressed (SHA-256 in the name), so the same path always holds the same bytes.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isRealUser() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isPdfUpload() {
+      return request.resource.size < 60 * 1024 * 1024
+        && request.resource.contentType == 'application/pdf';
+    }
+
+    // Tenders are shared by every signed-in engineer (same as the tenders rule in firestore.rules).
+    match /tenders/{tenderId}/sources/{fileName} {
+      allow read: if isRealUser();
+      allow create, update: if isRealUser() && isPdfUpload();
+    }
+
+    // Demo guests (anonymous sign-in) only reach files under their own uid.
+    match /demo/{uid}/{tenderId}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && tenderId.matches('DEMO-.*') && isPdfUpload();
+    }
+
+    // Legacy per-user uploads.
+    match /users/{uid}/{allPaths=**} {
+      allow read, write: if isRealUser() && request.auth.uid == uid;
+    }
+  }
+}

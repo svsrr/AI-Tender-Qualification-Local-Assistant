@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated with a real (non-anonymous) identity.
+    // The app no longer auto-signs-in anonymously and requires Google Sign-In, so this also
+    // closes off any anonymous session that might otherwise reach the shared workspace.
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isDemoGuest() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // Helper function to check if the user is operating on their own document tree
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profile rule
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Subcollections for user data
+      match /tenders/{tenderId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /extractedBidders/{bidderId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /extractedDocuments/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /technicalQueries/{queryId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Legacy single-document shared workspace, kept read-only-in-practice so the
+    // one-time migration into per-tender documents can still read it once.
+    match /sharedWorkspace/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Each tender gets its own document (data + metadata + collaborative edit lock),
+    // so multiple tenders can be evaluated at once without one clobbering another's data.
+    match /tenders/{tenderId} {
+      allow read, write: if isAuthenticated();
+
+      // Demo guests (anonymous sign-in, for hackathon judges) only ever see and change their
+      // own DEMO- tenders, marked with demoOwner = their uid. Real tenders stay invisible.
+      allow get: if isDemoGuest() && tenderId.matches('DEMO-.*')
+        && (resource == null || resource.data.demoOwner == request.auth.uid);
+      allow list: if isDemoGuest() && resource.data.demoOwner == request.auth.uid;
+      allow create: if isDemoGuest() && tenderId.matches('DEMO-.*')
+        && request.resource.data.isDemo == true
+        && request.resource.data.demoOwner == request.auth.uid;
+      allow update: if isDemoGuest() && tenderId.matches('DEMO-.*')
+        && resource.data.demoOwner == request.auth.uid
+        && request.resource.data.demoOwner == request.auth.uid
+        && request.resource.data.isDemo == true;
+      allow delete: if isDemoGuest() && tenderId.matches('DEMO-.*')
+        && resource.data.demoOwner == request.auth.uid;
+    }
+
+    // demoUsage (guest AI allowance counters) has no rule, so only the backend's Admin SDK can touch it.
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account info and evaluation preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Tender": {
+      "title": "Tender Project",
+      "description": "Tender NIT metadata and evaluation criteria",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "tenderNo": { "type": "string" },
+        "jobName": { "type": "string" },
+        "typeOfJob": { "type": "string" },
+        "clientOrg": { "type": "string" },
+        "estimatedCostCr": { "type": "number" },
+        "similarNatureDefinition": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "tenderNo", "jobName"]
+    },
+    "ExtractedBidder": {
+      "title": "Extracted Bidder Scrutiny Record",
+      "description": "Scrutiny records and work orders extracted per bidder",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "slNo": { "type": "number" },
+        "bidderName": { "type": "string" },
+        "cityState": { "type": "string" },
+        "workOrders": { "type": "array" },
+        "finalPosition": { "type": "string" },
+        "pageNumber": { "type": "number" },
+        "gstin": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "bidderName"]
+    },
+    "ExtractedDocument": {
+      "title": "Extracted Document",
+      "description": "Extracted bidder document with OCR field details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "bidderId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "documentType": { "type": "string" },
+        "pageCount": { "type": "number" },
+        "overallConfidence": { "type": "number" },
+        "extractedFields": { "type": "array" },
+        "authenticityScore": { "type": "number" },
+        "riskFlags": { "type": "array" },
+        "status": { "type": "string" },
+        "uploadTime": { "type": "string" },
+        "storageUrl": { "type": "string" }
+      },
+      "required": ["id", "userId", "fileName"]
+    },
+    "TechnicalQueryRecord": {
+      "title": "Technical Query",
+      "description": "Technical query issued or drafted per user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "tqRefNo": { "type": "string" },
+        "bidderId": { "type": "string" },
+        "bidderName": { "type": "string" },
+        "clauseRef": { "type": "string" },
+        "deficiency": { "type": "string" },
+        "queryText": { "type": "string" },
+        "responseDeadline": { "type": "string" },
+        "status": { "type": "string" },
+        "issuedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "tqRefNo", "bidderName"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "users/{userId}/tenders": {
+      "schema": "Tender",
+      "description": "Tenders managed by user"
+    },
+    "users/{userId}/extractedBidders": {
+      "schema": "ExtractedBidder",
+      "description": "Extracted bidder data per user"
+    },
+    "users/{userId}/extractedDocuments": {
+      "schema": "ExtractedDocument",
+      "description": "Extracted documents per user"
+    },
+    "users/{userId}/technicalQueries": {
+      "schema": "TechnicalQueryRecord",
+      "description": "Technical queries per user"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+!.env.production
+.firebase/
+.antigravity/
+
+# Scratch & temporary patch scripts
+*.cjs
+patch*.txt
+scratch_test.ts
+clear_data_patch.ts
+test-*.js
+update-auth.js
+
+# Working spreadsheets and Office lock files (also kept out of Cloud Run uploads)
+*.xlsx
+~$*
